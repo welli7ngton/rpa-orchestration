@@ -173,4 +173,12 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-# End of https://www.toptal.com/developers/gitignore/api/python
+### robotframework ###
+
+/results
+
+log.html
+output.xml
+report.html
+selenium-screenshot-*.png
+geckodriver-*.log
