@@ -4,10 +4,10 @@ from backend.api.services.publisher import RabbitPublisher
 from backend.api.schemas.schemas import TaskRequest, TaskResponse
 from backend.api.core.config import settings
 
-router = APIRouter(prefix="/v1")
+router = APIRouter(prefix="/publish")
 
 
-@router.post("/tasks", response_model=TaskResponse)
+@router.post("/task", response_model=TaskResponse)
 def create_task(req: TaskRequest, background: BackgroundTasks):
     publisher = RabbitPublisher(settings.MAIN_QUEUE)
     message = req.model_dump()
