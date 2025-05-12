@@ -1,24 +1,27 @@
+import threading
+
 from backend.api.core.config import settings
 from backend.api.routes.publisher import router
 from backend.api.services.dispatcher import routing_service
 from backend.api.services.callback import callback_service
-from backend.api.workers.base import BaseWorker
-from backend.api.workers.runner import script_runner
+from backend.api.workers.rpa_worker import RPAWorker
+from backend.api.workers.safe_worker import SafeWorker
 from fastapi import FastAPI
 
 from contextlib import asynccontextmanager
 
 
-# FIXME: o contexto das filas de execução está errado, é preciso direcionar corretamente o body das mensagens para
-# os workers correspondentes
 def start_consumers():
     # Dispatcher
-    BaseWorker(settings.MAIN_QUEUE, routing_service, "dispatcher").start()
+    dispatcher_worker = SafeWorker(settings.MAIN_QUEUE, routing_service, max_workers=2)
+    threading.Thread(target=dispatcher_worker.start, daemon=True).start()
     # Callback
-    BaseWorker(settings.CALLBACK_QUEUE, callback_service, "callback").start()
-    # Workers especializados
-    for q in settings.SPECIALIZED_QUEUES:
-        BaseWorker(q, script_runner, f"worker-{q}")
+    callback_worker = SafeWorker(settings.CALLBACK_QUEUE, callback_service, max_workers=2)
+    threading.Thread(target=callback_worker.start, daemon=True).start()
+
+    # RPA Workers
+    for queue in settings.SPECIALIZED_QUEUES:
+        threading.Thread(target=RPAWorker(queue).start, daemon=True).start()
 
 
 @asynccontextmanager
@@ -32,4 +35,10 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
 app.include_router(router)
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}

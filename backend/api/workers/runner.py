@@ -4,6 +4,8 @@ import subprocess
 from backend.api.core.config import settings
 from backend.api.services.publisher import RabbitPublisher
 
+from datetime import datetime, timezone
+
 
 def script_runner(body, worker_id):
     task = json.loads(body)
@@ -12,6 +14,7 @@ def script_runner(body, worker_id):
 
     print(f"[{worker_id}] Recebido: {task}")
 
+    start_time = datetime.now(timezone.utc).isoformat()
     try:
         if path.endswith(".py"):
             print(f"[{worker_id}] Executando script Python: {path}")
@@ -41,7 +44,9 @@ def script_runner(body, worker_id):
             "status": status,
             "worker": worker_id,
             "stdout": result.stdout,
-            "stderr": result.stderr
+            "stderr": result.stderr,
+            "start_time": start_time,
+            "end_time": datetime.now(timezone.utc).isoformat(),
         }
 
         RabbitPublisher(settings.CALLBACK_QUEUE).publish(response)
@@ -51,7 +56,9 @@ def script_runner(body, worker_id):
             "id": task["id"],
             "status": "exception",
             "worker": worker_id,
-            "error": str(e)
+            "error": str(e),
+            "start_time": start_time,
+            "end_time": datetime.now(timezone.utc).isoformat(),
         }
 
         RabbitPublisher(settings.CALLBACK_QUEUE).publish(response)
