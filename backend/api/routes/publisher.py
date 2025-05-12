@@ -6,6 +6,18 @@ from backend.api.core.config import settings
 
 router = APIRouter(prefix="/publish")
 
+"""
+    TODO
+    Método	    Rota	                    Função
+    GET	        /tasks/{task_id}/status	    Ver o status de execução
+    POST	    /tasks/{task_id}/retry	    Reexecutar a automação
+    POST	    /tasks/{task_id}/cancel	    Cancelar a automação (se suportado)
+    GET	        /tasks/history	            Ver histórico de execuções
+    GET         /tasks/history?type=emissao_nota&status=erro
+    GET	        /workers/status	            Monitorar status dos workers
+    GET	        /metrics	                Expor métricas Datadog
+"""
+
 
 @router.post("/task", response_model=TaskResponse)
 def create_task(req: TaskRequest, background: BackgroundTasks):
