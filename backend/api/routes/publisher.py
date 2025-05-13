@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException
 
 from backend.api.services.publisher import RabbitPublisher
 from backend.api.schemas.schemas import TaskRequest, TaskResponse
 from backend.api.core.config import settings
+from backend.api.core.logger import setup_logger
+
 
 router = APIRouter(prefix="/publish")
-
+logger = setup_logger('publisher')
 """
     TODO
     Método	    Rota	                    Função
@@ -20,15 +22,19 @@ router = APIRouter(prefix="/publish")
 
 
 @router.post("/task", response_model=TaskResponse)
-def create_task(req: TaskRequest, background: BackgroundTasks):
+def create_task(req: TaskRequest):
     publisher = RabbitPublisher(settings.MAIN_QUEUE)
-    message = req.model_dump()
-    # publica na fila principal
+    message = req.model_dump(mode="json")
+
+    logger.info(msg='Message received.', extra={'data': message})
     publisher.publish(message)
     publisher.close()
-    # TODO opcional: iniciar consumidor de callback em background
-    # background.add_task(start_callback_consumer)
-    return TaskResponse(id=message["id"], status="queued")
+
+    return TaskResponse(
+        task_id=req.task_id,
+        status="queued",
+        queued_time=req.queued_time
+    )
 
 
 @router.get("/tasks/{task_id}", response_model=TaskResponse)

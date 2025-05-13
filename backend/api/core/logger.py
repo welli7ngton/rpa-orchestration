@@ -9,7 +9,7 @@ def setup_logger(name: str = "rpa_orchestrator") -> logging.Logger:
 
     log_handler = logging.StreamHandler(sys.stdout)
     formatter = jsonlogger.JsonFormatter(
-        '%(asctime)s %(levelname)s %(name)s %(message)s %(funcName)s %(lineno)d'
+        '%(asctime)s %(levelname)s %(name)s %(message)s'
     )
     log_handler.setFormatter(formatter)
 

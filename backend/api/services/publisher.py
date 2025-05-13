@@ -9,12 +9,6 @@ class RabbitPublisher:
         self.channel = self.conn.channel()
         self.queue = queue
 
-        # declara todas as filas
-        # self.channel.queue_declare(queue=settings.MAIN_QUEUE, durable=True)
-        # self.channel.queue_declare(queue=settings.CALLBACK_QUEUE, durable=True)
-        # for q in settings.SPECIALIZED_QUEUES:
-        #     self.channel.queue_declare(queue=q, durable=True)
-
     def publish(self, message: dict):
 
         body = json.dumps(message).encode("utf-8")
