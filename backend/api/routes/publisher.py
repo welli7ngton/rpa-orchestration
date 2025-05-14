@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 
-from backend.api.services.publisher import RabbitPublisher
+from backend.api.services.rabitmq.publisher import RabbitPublisher
 from backend.api.schemas.schemas import TaskRequest, TaskResponse
 from backend.api.core.config import settings
 from backend.api.core.logger import setup_logger
