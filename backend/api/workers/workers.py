@@ -4,7 +4,9 @@ from concurrent.futures import ThreadPoolExecutor
 from abc import ABC, abstractmethod
 
 from backend.api.core.config import settings
-from backend.api.workers.runner import script_runner
+# from backend.api.workers.runner import script_runner
+from backend.api.utils.runner import script_runner
+from backend.api.utils.logger import save_log_in_file
 
 
 class BaseWorker(ABC):
@@ -39,7 +41,7 @@ class BaseWorker(ABC):
 
 class RPAWorker(BaseWorker):
     def process_task(self, ch, method, properties, body):
-        print(f"[{self.queue_name}] RPA Processing: {body}")
+        print(f"[{self.queue_name}] RPA Processing")
         script_runner(body)
 
 
@@ -49,4 +51,14 @@ class SafeWorker(BaseWorker):
         self.callback_func = callback_func
 
     def process_task(self, ch, method, properties, body):
+        print(f"[{self.queue_name}] SafeWorker Processing")
         self.callback_func(ch, method, properties, body)
+
+
+class LoggerWorker(BaseWorker):
+    def __init__(self, queue_name, callback_func, max_workers=3):
+        super().__init__(queue_name, max_workers)
+
+    def process_task(self, ch, method, properties, body):
+        print(f"[{self.queue_name}] LoggerWorker Processing")
+        save_log_in_file(body)
